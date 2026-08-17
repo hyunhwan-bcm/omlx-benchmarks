@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Tool</title>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --panel: #ffffff;
+    --border: #d8dee4;
+    --text: #24292f;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --ok: #16a34a;
+    --header-bg: #eef2f7;
+    --row-alt: #f8fafc;
+    --drop-active: #dbeafe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  main { padding: 20px 24px; max-width: 1200px; margin: 0 auto; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  button {
+    font: inherit;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease;
+  }
+  button:hover { background: #f0f3f7; }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  button.primary:hover { background: var(--accent-hover); }
+  button.danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+  }
+  button.danger:hover { background: var(--danger-hover); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:disabled:hover { background: var(--panel); }
+  button.primary:disabled:hover { background: var(--accent); }
+  button.danger:disabled:hover { background: var(--danger); }
+
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    padding: 28px;
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 16px;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .dropzone.active {
+    background: var(--drop-active);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .dropzone strong { color: var(--text); }
+  .dropzone.active strong { color: var(--accent); }
+  .dropzone .hint { font-size: 12px; margin-top: 6px; }
+
+  .status {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .status.error { color: var(--danger); }
+
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: auto;
+    max-height: 70vh;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--header-bg);
+    text-align: left;
+    font-weight: 600;
+    padding: 0;
+    border-bottom: 2px solid var(--border);
+    z-index: 1;
+  }
+  thead th .cell {
+    display: block;
+    padding: 9px 12px;
+    min-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+  }
+  tbody td {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  tbody tr:hover td { background: #eef4ff; }
+  td .cell {
+    display: block;
+    padding: 8px 12px;
+    min-width: 120px;
+    max-width: 320px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    outline: none;
+  }
+  td .cell:focus {
+    background: #fff8e6;
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .rownum {
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    user-select: none;
+  }
+  .empty-msg {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px;
+    font-size: 14px;
+  }
+  .del-row-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  .del-row-btn:hover { background: #fee2e2; color: var(--danger); }
+  input[type="file"] { display: none; }
+  .file-label {
+    display: inline-block;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer;
+  }
+  .file-label:hover { background: #f0f3f7; }
+  .file-name { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>CSV Tool</h1>
+  <p>Import, edit, and export CSV / XLSX — everything runs locally in your browser.</p>
+</header>
+<main>
+  <div class="toolbar">
+    <label class="file-label" for="fileInput">Import CSV or XLSX…</label>
+    <input type="file" id="fileInput" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <span class="file-name" id="fileName"></span>
+    <button id="addRowBtn" class="primary" disabled>+ Add row</button>
+    <button id="saveCsvBtn" disabled>Save as CSV</button>
+    <button id="saveXlsxBtn" disabled>Save as XLSX</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="dropzone" id="dropzone">
+    <div><strong>Drag &amp; drop a .csv file here</strong></div>
+    <div class="hint">or use the Import button above</div>
+  </div>
+
+  <div class="table-wrap" id="tableWrap" hidden>
+    <table id="dataTable"></table>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+/* ============================================================
+ * State
+ * ============================================================ */
+let rows = [];          // array of arrays of strings; rows[0] = header
+let fileName = "data";  // base name (no extension) used for downloads
+
+/* ============================================================
+ * CSV parsing (handles quoted fields, commas, escaped quotes,
+ * newlines inside quotes, CRLF)
+ * ============================================================ */
+function parseCSV(text) {
+  const out = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  let i = 0;
+  const n = text.length;
+
+  // Strip a leading UTF-8 BOM if present.
+  if (text.charCodeAt(0) === 0xFEFF) i = 1;
+
+  while (i < n) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { // escaped quote
+          field += '"';
+          i += 2;
+        } else {
+          inQuotes = false;
+          i++;
+        }
+      } else {
+        field += c;
+        i++;
+      }
+    } else {
+      if (c === '"') {
+        inQuotes = true;
+        i++;
+      } else if (c === ',') {
+        row.push(field);
+        field = "";
+        i++;
+      } else if (c === '\r') {
+        if (text[i + 1] === '\n') i++; // consume CRLF as one line break
+        row.push(field);
+        field = "";
+        out.push(row);
+        row = [];
+        i++;
+      } else if (c === '\n') {
+        row.push(field);
+        field = "";
+        out.push(row);
+        row = [];
+        i++;
+      } else {
+        field += c;
+        i++;
+      }
+    }
+  }
+  // Final field / row (file may not end with a newline).
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    out.push(row);
+  }
+  // Drop a trailing completely-empty row (common with trailing newline).
+  if (out.length > 1 && out[out.length - 1].length === 1 && out[out.length - 1][0] === "") {
+    out.pop();
+  }
+  return out;
+}
+
+/* ============================================================
+ * CSV serialization (RFC 4180: quote fields with comma, quote,
+ * or newline; double any embedded quotes)
+ * ============================================================ */
+function csvField(value) {
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function toCSV(data) {
+  return data.map(r => r.map(csvField).join(",")).join("\r\n") + "\r\n";
+}
+
+/* ============================================================
+ * Table rendering
+ * ============================================================ */
+const table = document.getElementById("dataTable");
+const tableWrap = document.getElementById("tableWrap");
+const statusEl = document.getElementById("status");
+const fileNameEl = document.getElementById("fileName");
+const addRowBtn = document.getElementById("addRowBtn");
+const saveCsvBtn = document.getElementById("saveCsvBtn");
+const saveXlsxBtn = document.getElementById("saveXlsxBtn");
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function render() {
+  const hasData = rows.length > 0;
+  tableWrap.hidden = !hasData;
+  addRowBtn.disabled = !hasData;
+  saveCsvBtn.disabled = !hasData;
+  saveXlsxBtn.disabled = !hasData;
+  if (!hasData) {
+    table.innerHTML = "";
+    return;
+  }
+
+  const ncols = rows[0].length;
+
+  let html = "<thead><tr>";
+  html += '<th class="rownum">#</th>';
+  for (let c = 0; c < ncols; c++) {
+    html += `<th><div class="cell" contenteditable="true" data-r="0" data-c="${c}" spellcheck="false">${esc(rows[0][c] || "")}</div></th>`;
+  }
+  html += "</tr></thead><tbody>";
+
+  for (let r = 1; r < rows.length; r++) {
+    html += `<tr data-r="${r}">`;
+    html += `<td class="rownum">${r}</td>`;
+    for (let c = 0; c < ncols; c++) {
+      html += `<td><div class="cell" contenteditable="true" data-r="${r}" data-c="${c}" spellcheck="false">${esc(rows[r][c] || "")}</div></td>`;
+    }
+    html += `<td><button class="del-row-btn" data-del="${r}" title="Delete row">✕</button></td>`;
+    html += "</tr>";
+  }
+  html += "</tbody>";
+  table.innerHTML = html;
+}
+
+/* Commit an edited cell back into state (on blur / Enter). */
+function commitCell(el) {
+  const r = +el.dataset.r;
+  const c = +el.dataset.c;
+  if (r < rows.length && c < rows[r].length) {
+    rows[r][c] = el.innerText; // preserve newlines typed in the cell
+  }
+}
+
+table.addEventListener("focusout", (e) => {
+  if (e.target.classList && e.target.classList.contains("cell")) {
+    commitCell(e.target);
+  }
+});
+
+table.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("cell")) {
+    e.preventDefault();
+    e.target.blur(); // triggers focusout -> commit
+  }
+});
+
+/* Delete row (event delegation). */
+table.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-del]");
+  if (!btn) return;
+  const r = +btn.dataset.del;
+  if (r >= 1) {
+    rows.splice(r, 1);
+    render();
+    setStatus(`${rows.length - 1} data row${rows.length - 1 === 1 ? "" : "s"}`);
+  }
+});
+
+/* Add row: blank row matching column count. */
+addRowBtn.addEventListener("click", () => {
+  const ncols = rows.length ? rows[0].length : 1;
+  rows.push(new Array(ncols).fill(""));
+  render();
+  setStatus(`${rows.length - 1} data row${rows.length - 1 === 1 ? "" : "s"}`);
+  // Focus the first cell of the new row for convenience.
+  const first = table.querySelector(`.cell[data-r="${rows.length - 1}"][data-c="0"]`);
+  if (first) first.focus();
+});
+
+/* ============================================================
+ * File import (button + drag & drop)
+ * ============================================================ */
+const fileInput = document.getElementById("fileInput");
+const dropzone = document.getElementById("dropzone");
+
+// --- XLSX import ---------------------------------------------------------
+// readXlsx below was written by Qwen3.8-27B-4bit via the pi agent; the wiring
+// here is the only hand-written part. It handles both DEFLATE (real Excel
+// files) and STORE (this tool's own exporter), and both sharedStrings and
+// inlineStr cells.
+async function loadXlsxFile(file) {
+  try {
+    setStatus("Reading " + file.name + "\u2026");
+    const parsed = await readXlsx(new Uint8Array(await file.arrayBuffer()));
+    if (!parsed.length) { setStatus("Sheet is empty.", true); return; }
+    const ncols = Math.max(...parsed.map(r => r.length));
+    rows = parsed.map(r => { const c = r.slice(); while (c.length < ncols) c.push(""); return c; });
+    fileName = file.name.replace(/\.xlsx$/i, "");
+    render();
+    setStatus("Loaded " + rows.length + " rows from " + file.name);
+  } catch (err) {
+    setStatus("Could not read that .xlsx: " + err.message, true);
+  }
+}
+
+"use strict";
+
+function decodeXml(s) {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function colToIndex(letters) {
+  let n = 0;
+  for (const ch of letters) {
+    n = n * 26 + (ch.charCodeAt(0) - 64);
+  }
+  return n - 1;
+}
+
+function findCentralDirectoryRecords(bytes) {
+  const records = [];
+  for (let i = 0; i + 4 <= bytes.length; i++) {
+    if (
+      bytes[i] === 0x50 &&
+      bytes[i + 1] === 0x4b &&
+      bytes[i + 2] === 0x01 &&
+      bytes[i + 3] === 0x02
+    ) {
+      records.push(i);
+      i += 3;
+    }
+  }
+  return records;
+}
+
+async function inflateRaw(data) {
+  const buf = await new Response(
+    new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))
+  ).arrayBuffer();
+  return new Uint8Array(buf);
+}
+
+async function readZipEntry(bytes, name) {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  for (const off of findCentralDirectoryRecords(bytes)) {
+    const method = dv.getUint16(off + 10, true);
+    const nameLen = dv.getUint16(off + 28, true);
+    const localOff = dv.getUint32(off + 42, true);
+    const entryName = new TextDecoder().decode(bytes.subarray(off + 46, off + 46 + nameLen));
+    if (entryName !== name) continue;
+
+    const localNameLen = dv.getUint16(localOff + 26, true);
+    const localExtraLen = dv.getUint16(localOff + 28, true);
+    const dataStart = localOff + 30 + localNameLen + localExtraLen;
+    const compSize = dv.getUint32(off + 20, true);
+    const data = bytes.subarray(dataStart, dataStart + compSize);
+
+    const out = method === 8 ? await inflateRaw(data) : data.slice();
+    return new TextDecoder().decode(out);
+  }
+  throw new Error("entry not found: " + name);
+}
+
+async function readXlsx(bytes) {
+  const sharedStrings = [];
+  try {
+    const ssXml = await readZipEntry(bytes, "xl/sharedStrings.xml");
+    const tRe = /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g;
+    let m;
+    while ((m = tRe.exec(ssXml)) !== null) {
+      sharedStrings.push(decodeXml(m[1]));
+    }
+  } catch {
+    // no shared strings table; fine
+  }
+
+  const sheetXml = await readZipEntry(bytes, "xl/worksheets/sheet1.xml");
+
+  const rows = [];
+  const rowRe = /<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g;
+  let rm;
+  while ((rm = rowRe.exec(sheetXml)) !== null) {
+    const rowInner = rm[1] || "";
+    const row = [];
+    const cRe = /<c\b[^>]*?(?:\/>|>([\s\S]*?)<\/c>)/g;
+    let cm;
+    while ((cm = cRe.exec(rowInner)) !== null) {
+      const openTag = cm[0].slice(0, cm[0].indexOf(">") + 1);
+      const inner = cm[1] || "";
+
+      const rMatch = openTag.match(/\br="([A-Z]+)\d+"/);
+      const tMatch = openTag.match(/\bt="([^"]*)"/);
+      const type = tMatch ? tMatch[1] : "";
+
+      let value = "";
+      if (type === "s") {
+        const v = inner.match(/<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/);
+        if (v) value = sharedStrings[parseInt(v[1], 10)] ?? "";
+      } else if (type === "inlineStr") {
+        const t = inner.match(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/);
+        if (t) value = decodeXml(t[1]);
+      } else {
+        const v = inner.match(/<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/);
+        if (v) value = decodeXml(v[1]);
+      }
+
+      if (!rMatch) continue;
+      const col = colToIndex(rMatch[1]);
+      while (row.length <= col) row.push("");
+      row[col] = value;
+    }
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function loadFile(file) {
+  if (!file) return;
+  if (/\.xlsx$/i.test(file.name)) { loadXlsxFile(file); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = parseCSV(String(reader.result));
+      if (parsed.length === 0) {
+        setStatus("File is empty.", true);
+        return;
+      }
+      // Normalize ragged rows to the header width.
+      const ncols = Math.max(...parsed.map(r => r.length));
+      rows = parsed.map(r => {
+        const copy = r.slice();
+        while (copy.length < ncols) copy.push("");
+        return copy;
+      });
+      fileName = file.name.replace(/\.[^.]+$/, "") || "data";
+      fileNameEl.textContent = file.name;
+      render();
+      setStatus(`Loaded ${file.name}: ${rows.length - 1} data row${rows.length - 2 === 1 ? "" : "s"}, ${ncols} column${ncols === 1 ? "" : "s"}`);
+    } catch (err) {
+      setStatus("Failed to parse file: " + err.message, true);
+    }
+  };
+  reader.onerror = () => setStatus("Failed to read file.", true);
+  reader.readAsText(file);
+}
+
+fileInput.addEventListener("change", () => {
+  loadFile(fileInput.files[0]);
+  fileInput.value = ""; // allow re-importing the same file
+});
+
+["dragenter", "dragover"].forEach(evt =>
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dropzone.classList.add("active");
+  })
+);
+["dragleave", "drop"].forEach(evt =>
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("active");
+  })
+);
+dropzone.addEventListener("drop", (e) => {
+  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
+/* ============================================================
+ * Download helper
+ * ============================================================ */
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================
+ * Save as CSV
+ * ============================================================ */
+saveCsvBtn.addEventListener("click", () => {
+  if (!rows.length) return;
+  const blob = new Blob([toCSV(rows)], { type: "text/csv;charset=utf-8" });
+  downloadBlob(blob, fileName + ".csv");
+  setStatus("Saved " + fileName + ".csv");
+});
+
+/* ============================================================
+ * Save as XLSX
+ *
+ * An .xlsx file is a ZIP archive (STORE, no compression) with:
+ *   [Content_Types].xml
+ *   _rels/.rels
+ *   xl/workbook.xml
+ *   xl/_rels/workbook.xml.rels
+ *   xl/worksheets/sheet1.xml
+ *
+ * ZIP format (STORE):
+ *   - local file header per file
+ *   - file data (uncompressed)
+ *   - central directory
+ *   - end of central directory record
+ * All integers are little-endian. CRC32 computed in JS.
+ * ============================================================ */
+
+/* --- CRC32 --- */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) {
+    c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* --- Minimal ZIP writer (STORE method) --- */
+function buildZip(files) {
+  // files: [{ name: string, data: Uint8Array }]
+  const enc = new TextEncoder();
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+
+  const u16 = (v) => new Uint8Array([v & 0xFF, (v >>> 8) & 0xFF]);
+  const u32 = (v) => new Uint8Array([v & 0xFF, (v >>> 8) & 0xFF, (v >>> 16) & 0xFF, (v >>> 24) & 0xFF]);
+
+  function concat(arrays) {
+    let len = 0;
+    for (const a of arrays) len += a.length;
+    const out = new Uint8Array(len);
+    let p = 0;
+    for (const a of arrays) { out.set(a, p); p += a.length; }
+    return out;
+  }
+
+  for (const f of files) {
+    const nameBytes = enc.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+
+    const localHeader = concat([
+      u32(0x04034b50), // local file header signature
+      u16(20),         // version needed to extract
+      u16(0),          // general purpose flags
+      u16(0),          // compression method: STORE
+      u16(0),          // mod time
+      u16(0x21),       // mod date (1980-01-01)
+      u32(crc),
+      u32(data.length), // compressed size
+      u32(data.length), // uncompressed size
+      u16(nameBytes.length),
+      u16(0),          // extra field length
+      nameBytes
+    ]);
+
+    chunks.push(localHeader, data);
+
+    central.push(concat([
+      u32(0x02014b50), // central directory file header signature
+      u16(20),         // version made by
+      u16(20),         // version needed to extract
+      u16(0),          // flags
+      u16(0),          // compression: STORE
+      u16(0),          // time
+      u16(0x21),       // date
+      u32(crc),
+      u32(data.length),
+      u32(data.length),
+      u16(nameBytes.length),
+      u16(0),          // extra len
+      u16(0),          // comment len
+      u16(0),          // disk number start
+      u16(0),          // internal attrs
+      u32(0),          // external attrs
+      u32(offset),     // local header offset
+      nameBytes
+    ]));
+
+    offset += localHeader.length + data.length;
+  }
+
+  const centralDir = concat(central);
+  const cdOffset = offset;
+  const end = concat([
+    u32(0x06054b50),                    // end of central directory signature
+    u16(0),                             // disk number
+    u16(0),                             // disk with central dir
+    u16(files.length),                  // entries on this disk
+    u16(files.length),                  // total entries
+    u32(centralDir.length),             // central dir size
+    u32(cdOffset),                      // central dir offset
+    u16(0)                              // comment length
+  ]);
+
+  return concat(chunks.concat([centralDir, end]));
+}
+
+/* --- XML helpers --- */
+function xmlEsc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function colLetter(n) { // 1-based column index -> A, B, ..., Z, AA, ...
+  let s = "";
+  while (n > 0) {
+    n--;
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26);
+  }
+  return s;
+}
+
+function cellRef(row, col) { // row/col 1-based
+  return colLetter(col) + row;
+}
+
+function buildSheetXml(data) {
+  let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  for (let r = 0; r < data.length; r++) {
+    xml += `<row r="${r + 1}">`;
+    const row = data[r];
+    for (let c = 0; c < row.length; c++) {
+      const v = row[c];
+      if (v === "") continue; // omit empty cells
+      // Use inline strings (t="inlineStr") to avoid a shared strings table.
+      xml += `<c r="${cellRef(r + 1, c + 1)}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    }
+    xml += "</row>";
+  }
+  xml += "</sheetData></worksheet>";
+  return xml;
+}
+
+const CONTENT_TYPES_XML =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+  '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+  '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+  '<Default Extension="xml" ContentType="application/xml"/>' +
+  '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+  '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+  '</Types>';
+
+const ROOT_RELS_XML =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+  '</Relationships>';
+
+const WORKBOOK_XML =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+  '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+  'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+  '<sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>';
+
+const WORKBOOK_RELS_XML =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+  '</Relationships>';
+
+/* --- Save as XLSX --- */
+saveXlsxBtn.addEventListener("click", () => {
+  if (!rows.length) return;
+  const enc = new TextEncoder();
+  const zip = buildZip([
+    { name: "[Content_Types].xml", data: enc.encode(CONTENT_TYPES_XML) },
+    { name: "_rels/.rels", data: enc.encode(ROOT_RELS_XML) },
+    { name: "xl/workbook.xml", data: enc.encode(WORKBOOK_XML) },
+    { name: "xl/_rels/workbook.xml.rels", data: enc.encode(WORKBOOK_RELS_XML) },
+    { name: "xl/worksheets/sheet1.xml", data: enc.encode(buildSheetXml(rows)) }
+  ]);
+  const blob = new Blob([zip], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+  downloadBlob(blob, fileName + ".xlsx");
+  setStatus("Saved " + fileName + ".xlsx");
+});
+
+/* ============================================================
+ * Status line
+ * ============================================================ */
+function setStatus(msg, isError) {
+  statusEl.textContent = msg || "";
+  statusEl.classList.toggle("error", !!isError);
+}
+
+/* ============================================================
+ * Demo data so the tool is usable immediately
+ * ============================================================ */
+rows = [
+  ["Name", "Quantity", "Price", "Notes"],
+  ["Widget", "3", "9.99", "Standard widget"],
+  ["Gadget, deluxe", "1", "24.50", 'Says "hello"'],
+  ["Doohickey", "12", "1.25", "Multi\nline note"]
+];
+fileName = "data";
+render();
+setStatus("Sample data loaded — import your own CSV to get started.");
+</script>
+</body>
+</html>

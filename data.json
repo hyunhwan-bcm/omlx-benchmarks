@@ -1,0 +1,185 @@
+{
+ "suites": [
+  {
+   "name": "mmlu",
+   "acc": 87.6,
+   "correct": 219,
+   "total": 250,
+   "mins": 220,
+   "note": ""
+  },
+  {
+   "name": "arc_challenge",
+   "acc": 97.6,
+   "correct": 244,
+   "total": 250,
+   "mins": 35,
+   "note": ""
+  },
+  {
+   "name": "truthfulqa",
+   "acc": 91.5,
+   "correct": 183,
+   "total": 200,
+   "mins": 212,
+   "note": ""
+  },
+  {
+   "name": "gsm8k",
+   "acc": 96.0,
+   "correct": 144,
+   "total": 150,
+   "mins": 80,
+   "note": ""
+  },
+  {
+   "name": "humaneval",
+   "acc": 95.7,
+   "correct": 157,
+   "total": 164,
+   "mins": 242,
+   "note": "re-graded, oMLX reported 12.2%"
+  }
+ ],
+ "mt": {
+  "benchmark": "FLORES-200 devtest, English to Korean",
+  "model": "mlx-community--Qwen3.8-27B-4bit",
+  "n": 200,
+  "chrf2": 34.03,
+  "bleu": 12.63,
+  "comet": 0.9042,
+  "median_secs": 3.0,
+  "tok_s": 11.3,
+  "samples": [
+   {
+    "chrf": 85.7,
+    "src": "The 802.11n standard operates on both the 2.4Ghz and 5.0Ghz frequencies.",
+    "ref": "802.11n 표준은 2.4GHz와 5.0GHz 주파수 모두에서 작동합니다.",
+    "hyp": "802.11n 표준은 2.4GHz와 5.0GHz 주파수 모두에서 동작합니다."
+   },
+   {
+    "chrf": 83.5,
+    "src": "Scientists say the explosion caused by the collision was massive.",
+    "ref": "과학자들은 충돌로 인한 폭발이 거대했다고 말한다.",
+    "hyp": "과학자들은 충돌로 인한 폭발이 거대했다고 말합니다."
+   },
+   {
+    "chrf": 31.5,
+    "src": "After the results came in, Gingrich lauded Santorum, but had tough words for Romney, on whose behalf negative campaign advertisements were aired in Iowa against Gingrich.",
+    "ref": "결과가 나온 후 깅리치는 산토룸을 칭찬했지만, 아이오와에서 깅리치를 상대로 네거티브 선거 광고를 방송한 롬니를 향해서는 거친 말을 했습니다.",
+    "hyp": "결과가 발표된 후, 진은 산토룸을 칭찬했지만, 아이오와에서 진을 대상으로 한 부정적 선거 광고가 방영된 롬니에 대해서는 날카로운 비판을 가했다."
+   },
+   {
+    "chrf": 13.4,
+    "src": "Their disciplined defence, ball handling skills and excellent team work made them stand out and it was clear that this was the team to beat.",
+    "ref": "잘 훈련된 수비 기술, 공 핸들링 기술 및 훌륭한 팀워크가 그들을 돋보이게 했고 이것으로 팀이 승리를 거머쥘 것이라는 사실은 누가 봐도 명백했습니다.",
+    "hyp": "그들의 질서 정연한 수비, 볼 핸들링 기술, 그리고 뛰어난 팀워크로 인해 눈에 띄었고, 이 팀이 반드시 꺾어야 할 상대임이 분명했다."
+   },
+   {
+    "chrf": 11.9,
+    "src": "\"We now have 4-month-old mice that are non-diabetic that used to be diabetic,\" he added.",
+    "ref": "\"그는 \"\"현재 4개월 된 당뇨병에서 치료된 생쥐가 있다\"\"고 덧붙였다.\"",
+    "hyp": "그는 “이제 비당뇨 상태인 4개월령 마우스가 있습니다. 이 쥐들은 이전에 당뇨 상태였습니다”라고 덧붙였습니다."
+   }
+  ]
+ },
+ "csv": {
+  "title": "CSV + XLSX Tool",
+  "built_by": "Qwen3.8-27B-4bit via pi (Herdr session)",
+  "turns": 21,
+  "bytes": 26347,
+  "verification": [
+   {
+    "name": "CSV: quoted comma in field",
+    "pass": true
+   },
+   {
+    "name": "CSV: escaped \"\" unescaped",
+    "pass": true
+   },
+   {
+    "name": "CSV: newline inside quotes",
+    "pass": true
+   },
+   {
+    "name": "CSV: write/read round-trip",
+    "pass": true
+   },
+   {
+    "name": "CRC32 known vector 0xCBF43926",
+    "pass": true
+   },
+   {
+    "name": "ZIP passes unzip -t",
+    "pass": true
+   },
+   {
+    "name": "XLSX has all 5 required parts",
+    "pass": true
+   },
+   {
+    "name": "openpyxl opens it, cells match",
+    "pass": true
+   },
+   {
+    "name": "XLSX import: real Excel file (DEFLATE)",
+    "pass": true
+   },
+   {
+    "name": "XLSX import: sharedStrings resolved",
+    "pass": true
+   },
+   {
+    "name": "XLSX import: quoted/comma values intact",
+    "pass": true
+   },
+   {
+    "name": "XLSX import: round-trips own export (STORE)",
+    "pass": true
+   }
+  ]
+ },
+ "pelican": {
+  "benchmark": "Simon Willison's pelican benchmark",
+  "prompt": "generate an SVG of a pelican riding a bicycle",
+  "model": "mlx-community--Qwen3.8-27B-4bit",
+  "agent": "pi 0.84.2",
+  "runs": [
+   {
+    "key": "harness",
+    "label": "Agent run",
+    "note": "pi 0.84.2 · write tool",
+    "tokens": 1327,
+    "seconds": 101,
+    "rate": 19.7,
+    "elements": 24,
+    "svg": "harness.svg"
+   },
+   {
+    "key": "direct",
+    "label": "Direct call",
+    "note": "single chat/completions request",
+    "tokens": 746,
+    "seconds": 39,
+    "rate": 19.1,
+    "elements": 17,
+    "svg": "direct.svg"
+   }
+  ],
+  "thinking": {
+   "on": {
+    "tokens": 16384,
+    "seconds": 900,
+    "finish": "length",
+    "result": "no drawing"
+   },
+   "off": {
+    "tokens": 746,
+    "seconds": 39,
+    "finish": "stop",
+    "result": "complete SVG"
+   },
+   "ratio": "22x"
+  }
+ }
+}

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Qwen3.8-27B on a Mac Studio</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--ink:#15181d;--dim:#646c78;--line:#e0e3e8;--acc:#c2570b;--ok:#1c7a4a;--bad:#b0392c;--art:#fbfbfa}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101318;--card:#181c22;--ink:#e8eaee;--dim:#939cab;--line:#262c35;--acc:#f0913c;--ok:#4cc38a;--bad:#ff7d6b;--art:#f4f4f2}}
+:root[data-theme=dark]{--bg:#101318;--card:#181c22;--ink:#e8eaee;--dim:#939cab;--line:#262c35;--acc:#f0913c;--ok:#4cc38a;--bad:#ff7d6b;--art:#f4f4f2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1000px;margin:0 auto;padding:52px 24px 72px;display:flex;flex-direction:column;gap:40px}
+.eyebrow{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+h1{font-size:clamp(30px,5vw,50px);font-weight:800;letter-spacing:-.035em;line-height:1.04;margin-top:10px;text-wrap:balance}
+.stand{margin-top:14px;max-width:64ch;font-size:17.5px;color:var(--dim)}
+.stand b{color:var(--ink);font-weight:600}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
+h2{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.sub{color:var(--dim);font-size:14.5px;margin-bottom:18px;max-width:70ch}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font:500 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding-bottom:10px;border-bottom:1px solid var(--line)}
+td{padding:11px 0;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+td.n{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;font-weight:650;text-align:right;width:80px}
+td.dim{color:var(--dim);font-weight:400}
+td.note{color:var(--acc);font-size:12.5px;padding-left:16px}
+.nums{display:flex;flex-wrap:wrap;gap:26px;margin-bottom:16px}
+.nums div{display:flex;flex-direction:column;gap:2px}
+.nums .k{font:10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.nums b{font-size:27px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.nums b.weak{color:var(--dim);font-weight:600}
+.art{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.art figure{margin:0;background:var(--art);border:1px solid var(--line);border-radius:11px;padding:14px}
+.art img{display:block;width:100%;height:auto}
+.cap{margin-top:9px;font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--dim)}
+.cap b{color:var(--ink)}
+ul.checks{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:5px 18px;margin-top:14px}
+ul.checks li{font:12.5px/1.7 ui-monospace,Menlo,monospace;color:var(--dim)}
+ul.checks li::before{content:"\2713  ";color:var(--ok);font-weight:700}
+ul.checks li.bad::before{content:"\2717  ";color:var(--bad)}
+.ex{border-top:1px solid var(--line);padding:12px 0;display:flex;flex-direction:column;gap:4px}
+.exs{font:10.5px/1 ui-monospace,Menlo,monospace;color:var(--dim)}
+.l{font-size:14px;line-height:1.55}
+.l span{display:inline-block;min-width:34px;font:10.5px/1 ui-monospace,Menlo,monospace;color:var(--dim);letter-spacing:.06em}
+details summary{font:11px/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);cursor:pointer;list-style:none;margin-top:8px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"\25B8  ";color:var(--acc)}
+details[open] summary::before{content:"\25BE  "}
+a{color:var(--acc)}
+.btn{display:inline-block;margin-top:16px;padding:10px 18px;border:1px solid var(--ink);border-radius:7px;font:500 13px/1 ui-monospace,Menlo,monospace;color:var(--ink);text-decoration:none}
+.btn:hover{background:var(--ink);color:var(--card)}
+footer{color:var(--dim);font:12px/1.8 ui-monospace,Menlo,monospace;border-top:1px solid var(--line);padding-top:20px}
+</style></head><body><div class="w">
+
+<header>
+<div class="eyebrow">Local inference benchmarks &middot; Apple M2 Max, 32 GB</div>
+<h1>What a 27B model does on a desktop</h1>
+<p class="stand">Qwen3.8-27B at 4-bit, served by oMLX on a Mac Studio at roughly <b>19 tokens/second</b>.
+Knowledge and reasoning evals, a Korean translation benchmark, an SVG drawing test, and a browser
+tool the model wrote itself. Every number here was verified independently &mdash; in one case that
+changed the result by <b>83 points</b>.</p>
+</header>
+
+<section>
+<h2>Accuracy suites</h2>
+<p class="sub">1,014 questions with thinking enabled, roughly 13 hours of continuous generation.</p>
+<table><thead><tr><th>Suite</th><th style="text-align:right">Score</th><th style="text-align:right">Correct</th><th style="text-align:right">Time</th><th></th></tr></thead>
+<tbody>
+<tr><td>mmlu</td><td class="n">87.6%</td><td class="n dim">219/250</td><td class="n dim">220 min</td><td class="note"></td></tr>
+<tr><td>arc_challenge</td><td class="n">97.6%</td><td class="n dim">244/250</td><td class="n dim">35 min</td><td class="note"></td></tr>
+<tr><td>truthfulqa</td><td class="n">91.5%</td><td class="n dim">183/200</td><td class="n dim">212 min</td><td class="note"></td></tr>
+<tr><td>gsm8k</td><td class="n">96.0%</td><td class="n dim">144/150</td><td class="n dim">80 min</td><td class="note"></td></tr>
+<tr><td>humaneval</td><td class="n">95.7%</td><td class="n dim">157/164</td><td class="n dim">242 min</td><td class="note">re-graded, oMLX reported 12.2%</td></tr>
+</tbody></table>
+<details><summary>Why HumanEval needed re-grading</summary>
+<p class="sub" style="margin-top:12px">oMLX scored this model <b>12.2%</b> on HumanEval. Its code extractor
+handles only a fenced block or a response beginning with <code>def</code>; with thinking enabled the model
+opens with reasoning prose, so the harness fell through to grading <em>prompt + entire reasoning trace</em>
+as if it were Python. That artifact does not compile, so almost everything failed. Re-executing the model's
+actual code against the official tests gives <b>95.7%</b> &mdash; 135 of 144 "failures" were correct all along.
+The remaining 9 are genuine: 5 assertion failures and 2 truncations.</p></details>
+</section>
+
+<section>
+<h2>English &rarr; Korean</h2>
+<p class="sub">FLORES-200 devtest, 200 sentences, 3.0s per sentence.
+chrF++ leads because it compares character n-grams and needs no tokenizer &mdash; the right choice for
+Korean. BLEU is greyed: without a morphological tokenizer it penalises valid particle and ending variation.</p>
+<div class="nums">
+<div><span class="k">chrF++</span><b>34.03</b></div>
+<div><span class="k">COMET</span><b>0.904</b></div>
+<div><span class="k">BLEU</span><b class="weak">12.63</b></div>
+<div><span class="k">sentences</span><b>200</b></div>
+</div>
+<p class="sub">chrF++ understates the model badly. COMET &mdash; a learned metric that judges adequacy rather than string overlap &mdash; puts it at <b>0.904</b>, with the worst sentence still at 0.75. The samples show why: the lowest chrF++ sentence is one where the translation is <em>more faithful than the reference</em>.</p>
+<details><summary>sample translations, best to worst</summary>
+<div class="ex"><div class="exs">chrF++ 85.7</div><div class="l"><span>EN</span>The 802.11n standard operates on both the 2.4Ghz and 5.0Ghz frequencies.</div><div class="l"><span>REF</span>802.11n 표준은 2.4GHz와 5.0GHz 주파수 모두에서 작동합니다.</div><div class="l"><span>MT</span>802.11n 표준은 2.4GHz와 5.0GHz 주파수 모두에서 동작합니다.</div></div>
+<div class="ex"><div class="exs">chrF++ 83.5</div><div class="l"><span>EN</span>Scientists say the explosion caused by the collision was massive.</div><div class="l"><span>REF</span>과학자들은 충돌로 인한 폭발이 거대했다고 말한다.</div><div class="l"><span>MT</span>과학자들은 충돌로 인한 폭발이 거대했다고 말합니다.</div></div>
+<div class="ex"><div class="exs">chrF++ 31.5</div><div class="l"><span>EN</span>After the results came in, Gingrich lauded Santorum, but had tough words for Romney, on whose behalf negative campaign advertisements were aired in Iowa against Gingrich.</div><div class="l"><span>REF</span>결과가 나온 후 깅리치는 산토룸을 칭찬했지만, 아이오와에서 깅리치를 상대로 네거티브 선거 광고를 방송한 롬니를 향해서는 거친 말을 했습니다.</div><div class="l"><span>MT</span>결과가 발표된 후, 진은 산토룸을 칭찬했지만, 아이오와에서 진을 대상으로 한 부정적 선거 광고가 방영된 롬니에 대해서는 날카로운 비판을 가했다.</div></div>
+<div class="ex"><div class="exs">chrF++ 13.4</div><div class="l"><span>EN</span>Their disciplined defence, ball handling skills and excellent team work made them stand out and it was clear that this was the team to beat.</div><div class="l"><span>REF</span>잘 훈련된 수비 기술, 공 핸들링 기술 및 훌륭한 팀워크가 그들을 돋보이게 했고 이것으로 팀이 승리를 거머쥘 것이라는 사실은 누가 봐도 명백했습니다.</div><div class="l"><span>MT</span>그들의 질서 정연한 수비, 볼 핸들링 기술, 그리고 뛰어난 팀워크로 인해 눈에 띄었고, 이 팀이 반드시 꺾어야 할 상대임이 분명했다.</div></div>
+<div class="ex"><div class="exs">chrF++ 11.9</div><div class="l"><span>EN</span>"We now have 4-month-old mice that are non-diabetic that used to be diabetic," he added.</div><div class="l"><span>REF</span>"그는 ""현재 4개월 된 당뇨병에서 치료된 생쥐가 있다""고 덧붙였다."</div><div class="l"><span>MT</span>그는 “이제 비당뇨 상태인 4개월령 마우스가 있습니다. 이 쥐들은 이전에 당뇨 상태였습니다”라고 덧붙였습니다.</div></div>
+</details>
+</section>
+
+<section>
+<h2>The pelican benchmark</h2>
+<p class="sub">Simon Willison's test &mdash; "generate an SVG of a pelican riding a bicycle." The interesting
+result was not the drawing. With thinking enabled the model spent <b>16,384 tokens</b> narrating a plan and
+never drew anything, twice. With <code>enable_thinking: false</code> it produced a complete SVG in
+<b>746 tokens</b>: 22&times; fewer, and the only setting that yielded art.</p>
+<div class="art">
+<div><figure><img src="pelican-agent.svg" alt="Pelican riding a bicycle, drawn via the pi coding agent"/></figure>
+<div class="cap"><b>Agent run</b> &mdash; pi with write tool &middot; 1,327 tok &middot; 24 elements</div></div>
+<div><figure><img src="pelican-direct.svg" alt="Pelican riding a bicycle, drawn via a direct API call"/></figure>
+<div class="cap"><b>Direct call</b> &mdash; single request &middot; 746 tok &middot; 17 elements</div></div>
+</div>
+<p class="sub" style="margin-top:16px">The agent version connects the bird to the machine &mdash; a leg runs to
+the crank, a foot rests on the pedal. The direct version draws both subjects competently but never joins them.</p>
+</section>
+
+<section>
+<h2>A tool the model built</h2>
+<p class="sub">Asked for a browser CSV editor with XLSX export, the model wrote a working one in 6 agent turns
+&mdash; including a ZIP writer with CRC32 implemented from scratch, since a real <code>.xlsx</code> is a ZIP of
+XML parts. It later wrote the reader too, handling DEFLATE and shared strings. Everything below was verified by
+running the code, not by reading it.</p>
+<ul class="checks">
+<li class="ok">CSV: quoted comma in field</li>
+<li class="ok">CSV: escaped "" unescaped</li>
+<li class="ok">CSV: newline inside quotes</li>
+<li class="ok">CSV: write/read round-trip</li>
+<li class="ok">CRC32 known vector 0xCBF43926</li>
+<li class="ok">ZIP passes unzip -t</li>
+<li class="ok">XLSX has all 5 required parts</li>
+<li class="ok">openpyxl opens it, cells match</li>
+<li class="ok">XLSX import: real Excel file (DEFLATE)</li>
+<li class="ok">XLSX import: sharedStrings resolved</li>
+<li class="ok">XLSX import: quoted/comma values intact</li>
+<li class="ok">XLSX import: round-trips own export (STORE)</li>
+</ul>
+<a class="btn" href="csv-tool.html">Open the tool &rarr;</a>
+<p class="sub" style="margin-top:16px">Import a CSV or XLSX, edit cells in place, export either format. Runs
+entirely in your browser, no libraries. The XLSX reader and writer are the model's code; only the file-input
+wiring is hand-written.</p>
+</section>
+
+<footer>
+Qwen3.8-27B-4bit &middot; oMLX 0.6.0rc1 &middot; Apple M2 Max, 30 GPU cores, 32 GB &middot; ~19 tok/s<br>
+Benchmarks: FLORES-200 (CC-BY-SA), MMLU, ARC, TruthfulQA, GSM8K, HumanEval,
+<a href="https://simonwillison.net/2025/Jun/6/six-months-in-llms/">the pelican test</a>.
+</footer>
+
+</div></body></html>

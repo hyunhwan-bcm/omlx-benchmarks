@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <!-- ground -->
+  <line x1="0" y1="330" x2="500" y2="330" stroke="#888" stroke-width="3"/>
+
+  <!-- rear wheel -->
+  <circle cx="150" cy="280" r="50" fill="none" stroke="#333" stroke-width="6"/>
+  <circle cx="150" cy="280" r="6" fill="#333"/>
+  <!-- front wheel -->
+  <circle cx="350" cy="280" r="50" fill="none" stroke="#333" stroke-width="6"/>
+  <circle cx="350" cy="280" r="6" fill="#333"/>
+
+  <!-- frame -->
+  <path d="M150 280 L220 190 L320 190 M220 190 L260 280 M320 190 L350 280 M260 280 L320 190" fill="none" stroke="#c0392b" stroke-width="8" stroke-linecap="round"/>
+  <!-- seat post + seat -->
+  <line x1="220" y1="190" x2="215" y2="165" stroke="#333" stroke-width="6"/>
+  <line x1="195" y1="165" x2="235" y2="165" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+  <!-- handlebar post + bars -->
+  <line x1="320" y1="190" x2="325" y2="150" stroke="#333" stroke-width="6"/>
+  <path d="M325 150 Q340 135 360 140" fill="none" stroke="#333" stroke-width="6" stroke-linecap="round"/>
+  <!-- pedal + crank -->
+  <circle cx="260" cy="280" r="10" fill="#333"/>
+  <line x1="260" y1="280" x2="285" y2="300" stroke="#333" stroke-width="5"/>
+
+  <!-- pelican body -->
+  <ellipse cx="215" cy="140" rx="55" ry="35" fill="#fff" stroke="#ccc" stroke-width="2"/>
+  <!-- wing -->
+  <path d="M180 135 Q215 115 250 140 Q220 160 180 135" fill="#e8e8e8" stroke="#ccc" stroke-width="2"/>
+  <!-- tail -->
+  <path d="M165 145 L130 160 L160 160 Z" fill="#fff" stroke="#ccc" stroke-width="2"/>
+  <!-- neck -->
+  <path d="M255 125 Q290 110 295 80" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M255 125 Q290 110 295 80" fill="none" stroke="#ccc" stroke-width="2" stroke-dasharray="1 8"/>
+  <!-- head -->
+  <circle cx="298" cy="72" r="16" fill="#fff" stroke="#ccc" stroke-width="2"/>
+  <!-- eye -->
+  <circle cx="303" cy="68" r="3" fill="#333"/>
+  <!-- beak (upper) -->
+  <path d="M310 70 L380 82 L312 84 Z" fill="#f39c12" stroke="#d35400" stroke-width="2"/>
+  <!-- pouch -->
+  <path d="M312 84 Q350 110 378 84 L312 84 Z" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+  <!-- leg to pedal -->
+  <path d="M230 165 L285 300" fill="none" stroke="#f39c12" stroke-width="6" stroke-linecap="round"/>
+  <!-- foot -->
+  <line x1="275" y1="300" x2="298" y2="300" stroke="#f39c12" stroke-width="6" stroke-linecap="round"/>
+</svg>
